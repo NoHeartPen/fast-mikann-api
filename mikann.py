@@ -1,7 +1,7 @@
 from sudachipy import Dictionary
 
 
-def analyze(text) -> list:
+def analyze_text(text) -> list:
     tokenizer = Dictionary().create()
     result_list = []
     for token in tokenizer.tokenize(text):
@@ -30,7 +30,3 @@ def _cursor_word(analysis_result: list, cursor_index: int) -> str:
             # 或者允许按照个人习惯，设置这种情况是返回前还是后
             return result[1]
 
-
-result = analyze("晩ご飯を食べましたか。")
-print(result)
-print(_cursor_word(result, 7))

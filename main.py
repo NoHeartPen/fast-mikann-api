@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
-
+from mikann import analyze_text,_cursor_word
 app = FastAPI()
 
 
@@ -25,7 +25,9 @@ async def analyze(sentence: str = Query(..., description="Input sentence"),
     try:
         # 处理输入的句子
         print(f"Sentence: {sentence}, Cursor Index: {cursor_index}")
-        return {"message": "Processing successful", "sentence": sentence, "cursor_index": cursor_index}
+        result = analyze_text("晩ご飯を食べましたか。")
+        return _cursor_word(result, cursor_index)
+        # return {"message": "Processing successful", "sentence": sentence, "cursor_index": cursor_index}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
