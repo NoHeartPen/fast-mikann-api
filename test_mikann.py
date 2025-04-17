@@ -1,5 +1,7 @@
 import unittest
 
+from mikann import analyze_text, _cursor_word
+
 
 class TestCursorWord(unittest.TestCase):
     def test_cursor_word(self):
@@ -7,10 +9,10 @@ class TestCursorWord(unittest.TestCase):
         test_cases = [
             # (光标索引, 期望的输出)
             # 光标在"晩御飯"之前
-            (0, "晩御飯"),
-            (1, "晩御飯"),
-            (2, "晩御飯"),
-            (3, "晩御飯"),
+            (0, "晩ご飯"),
+            (1, "晩ご飯"),
+            (2, "晩ご飯"),
+            (3, "晩ご飯"),
             (4, "を"),
             (5, "食べる"),
             (6, "食べる"),
@@ -27,6 +29,7 @@ class TestCursorWord(unittest.TestCase):
             with self.subTest(
                 cursor_index=cursor_index, expected_output=expected_output
             ):
+                result = analyze_text("晩ご飯を食べましたか。")
                 if cursor_index > sum(len(key) for key in result):
                     # 如果光标位置超出范围，检查是否抛出异常
                     with self.assertRaises(ValueError):
