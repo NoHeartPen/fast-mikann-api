@@ -11,9 +11,9 @@ def has_not_kana(input_text: str) -> bool:
     """
     for char in input_text:
         gana_code = ord(char)
-        if 12353 <= gana_code <= 12447 or 12448 <= gana_code <= 12543:
+        if 12353 <= gana_code <= 12543:
             # According to the Unicode Office Document, the Hiragana code ranges from 12353 to 12447.
-            # https://www.unicode.org/charts/PDF/U3040.pdf 
+            # https://www.unicode.org/charts/PDF/U3040.pdf
             # And the Katakana code ranges from 12448 to 12543.
             # https://www.unicode.org/charts/PDF/U30A0.pdf
             return False
