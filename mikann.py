@@ -1,5 +1,6 @@
 from sudachipy import Dictionary
 
+
 def has_not_kana(input_text: str) -> bool:
     """Check if the input text does not have kana.
 
@@ -30,8 +31,11 @@ def analyze_text(text) -> list:
         # 普段、読み方（reading_form）で検索するのをお勧め。
         jishokei = token.reading_form()
         if has_not_kana(token.dictionary_form):
-            # dictionary_form に仮名が含まれていない場合、同音異義語の可能性が高いため、読み方で検索すると結果が煩雑になることがある。そのため、dictionary_formで検索するのをお勧め。
-            # 日本語において最も同音異義語が多いとされる熟語は「こうしょう」であり、『スーパー大辞林3.0』では  語が該当する（交渉・考証・工匠・高尚・鉱床・口承・厚相・哄笑・公称・工廠・公証・公娼・校章など）。『広辞苑』第 6 版には 50 もの仮名見出しがある。
+            # dictionary_form に仮名が含まれていない場合、同音異義語の可能性が高いため、読み方で検索すると結果が煩雑になることがある。
+            # そのため、dictionary_formで検索するのをお勧め。
+            # 日本語において最も同音異義語が多いとされる熟語は「こうしょう」であり、
+            # 『スーパー大辞林3.0』では  語が該当する（交渉・考証・工匠・高尚・鉱床・口承・厚相・哄笑・公称・工廠・公証・公娼・校章など）。
+            # 『広辞苑』第 6 版には 50 もの仮名見出しがある。
             # https://ja.wikipedia.org/wiki/%E5%90%8C%E9%9F%B3%E7%95%B0%E7%BE%A9%E8%AA%9E
             jishokei = token.dictionary_form
         result = [token.surface(), jishokei]
@@ -41,6 +45,7 @@ def analyze_text(text) -> list:
 
 def _cursor_word(analysis_result: list[str], cursor_index: int) -> str | None:
     """获取光标附近"""
+    # TODO 修复下面的判断逻辑
     # if sum(len(key) for key in result) < cursor_index:
     #     # 如果光标所在的位置大于文本的长度，直接抛出异常
     #     raise ValueError("Cursor index is out of range.")
