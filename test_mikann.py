@@ -2,13 +2,13 @@
 import unittest
 
 
-# 单元测试
 class TestCursorWord(unittest.TestCase):
     def test_cursor_word(self):
         # 0晩1ご2飯3を4食5べ6ま7し8た9か10。11
         test_cases = [
             # (光标索引, 期望的输出)
-            (0, "晩御飯"),  # 光标在"晩御飯"之前
+            # 光标在"晩御飯"之前
+            (0, "晩御飯"),
             (1, "晩御飯"),
             (2, "晩御飯"),
             (3, "晩御飯"),
