@@ -1,4 +1,3 @@
-
 import unittest
 
 
@@ -25,14 +24,18 @@ class TestCursorWord(unittest.TestCase):
             # FIXME  (1111,  "。"),
         ]
         for cursor_index, expected_output in test_cases:
-            with self.subTest(cursor_index=cursor_index, expected_output=expected_output):
+            with self.subTest(
+                cursor_index=cursor_index, expected_output=expected_output
+            ):
                 if cursor_index > sum(len(key) for key in result):
                     # 如果光标位置超出范围，检查是否抛出异常
                     with self.assertRaises(ValueError):
                         _cursor_word(result, cursor_index)
                 else:
-                    self.assertEqual(_cursor_word(result, cursor_index), expected_output)
+                    self.assertEqual(
+                        _cursor_word(result, cursor_index), expected_output
+                    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
