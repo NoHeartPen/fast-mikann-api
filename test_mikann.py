@@ -76,7 +76,14 @@ class TestCursorWord(unittest.TestCase):
                     ["を", "を"],
                 ],
             ),
-            # 接下来是 SudachiDict 中也尚未登录的词条测试用例
+        ]
+        for test_text, expected_output in test_cases:
+            with self.subTest(cursor_index=test_text, expected_output=expected_output):
+                self.assertEqual(analyze_text(test_text), expected_output)
+
+    def test_sudachi_need_to_improve(self):
+        # 接下来是 SudachiDict 中也尚未登录的词条测试用例
+        test_cases = [
             (
                 # つまんねえよ
                 # つまらない
