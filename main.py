@@ -30,13 +30,9 @@ def post_analyze(request: AnalyzeRequest):
     try:
         sentence = request.sentence
         cursor_index = request.cursor_index
-        # 处理输入的句子
-        print(f"Sentence: {sentence}, Cursor Index: {cursor_index}")
         result = analyze_text(sentence)
         cursor_jishokei = _cursor_word(result, cursor_index)
-        print(cursor_jishokei)
         return {"jishokei": f"{cursor_jishokei}"}
-
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
