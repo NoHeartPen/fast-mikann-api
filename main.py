@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from starlette.responses import RedirectResponse
 
-from mikann import analyze_text, _cursor_word
+from mikann import analyze_text, get_cursor_result
 
 app = FastAPI()
 
@@ -31,7 +31,7 @@ def post_analyze(request: AnalyzeRequest):
         sentence = request.sentence
         cursor_index = request.cursor_index
         result = analyze_text(sentence)
-        cursor_jishokei = _cursor_word(result, cursor_index)
+        cursor_jishokei = get_cursor_result(result, cursor_index)
         return {"jishokei": f"{cursor_jishokei}"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -1,6 +1,6 @@
 import unittest
 
-from mikann import analyze_text, _cursor_word
+from mikann import analyze_text, get_cursor_result
 
 
 class TestCursorWord(unittest.TestCase):
@@ -257,10 +257,10 @@ class TestCursorWord(unittest.TestCase):
                 if cursor_index > sum(len(key) for key in result):
                     # 如果光标位置超出范围，检查是否抛出异常
                     with self.assertRaises(ValueError):
-                        _cursor_word(result, cursor_index)
+                        get_cursor_result(result, cursor_index)
                 else:
                     self.assertEqual(
-                        _cursor_word(result, cursor_index), expected_output
+                        get_cursor_result(result, cursor_index), expected_output
                     )
 
 

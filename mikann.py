@@ -37,8 +37,16 @@ def analyze_text(text) -> list:
     return result_list
 
 
-def _cursor_word(analysis_result: list[str], cursor_index: int) -> str | None:
-    """获取光标附近"""
+def get_cursor_result(analysis_result: list[str], cursor_index: int) -> str | None:
+    """
+    返回光标所在位置的单词的分析结果。
+    Args:
+        analysis_result: 光标所在上下文的所有分析结果
+        cursor_index: 光标所在的上下文的索引
+
+    Returns:
+        光标所在位置的单词的分析结果，如果光标位置不在上下文中，返回 None.
+    """
     # TODO 修复下面的判断逻辑
     # if sum(len(key) for key in result) < cursor_index:
     #     # 如果光标所在的位置大于文本的长度，直接抛出异常
@@ -46,10 +54,10 @@ def _cursor_word(analysis_result: list[str], cursor_index: int) -> str | None:
 
     length_before_cursor = 0
     for result in analysis_result:
-        # 通过计算光标前的文本长度确认
-        length_before_cursor += len(result[0])
+        surface, jishokei = result[0], result[1]
+        length_before_cursor += len(surface)
         if length_before_cursor >= cursor_index:
             # TODO = 说明用户的光标正好放在2个句节的分界处
-            # TODO 可以考虑基于难度和词频猜测哪个更有可能是用户想查的单词，
+            # 可以考虑基于难度和词频猜测哪个更有可能是用户想查的单词，
             # 或者允许按照个人习惯，设置这种情况是返回前还是后
-            return result[1]
+            return jishokei
