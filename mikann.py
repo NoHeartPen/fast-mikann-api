@@ -47,10 +47,19 @@ def get_cursor_result(analysis_result: list[str], cursor_index: int) -> str | No
     Returns:
         光标所在位置的单词的分析结果，如果光标位置不在上下文中，返回 None.
     """
-    # TODO 修复下面的判断逻辑
-    # if sum(len(key) for key in result) < cursor_index:
-    #     # 如果光标所在的位置大于文本的长度，直接抛出异常
-    #     raise ValueError("Cursor index is out of range.")
+    if cursor_index < 0:
+        raise ValueError(
+            f"Cursor index must be a non-negative integer. Given index: {cursor_index}. "
+            f"Analysis results: {analysis_result}"
+        )
+
+    total_length = sum(len(result[0]) for result in analysis_result)
+    if cursor_index > total_length:
+        # 光标所在的位置索引不可能大于所有分析结果的表层形的长度之和
+        raise ValueError(
+            f"Cursor index is out of range. Given index: {cursor_index}. "
+            f"Analysis results: {analysis_result}"
+        )
 
     length_before_cursor = 0
     for result in analysis_result:

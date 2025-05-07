@@ -246,16 +246,22 @@ class TestCursorWord(unittest.TestCase):
             (10, "か"),
             (11, "。"),
             # 异常测试
-            # FIXME (12,  "。"),
-            # FIXME  (1111,  "。"),
+            (12, "。"),
+            (1111, "。"),
+            (-1, "。"),
         ]
         for cursor_index, expected_output in test_cases:
             with self.subTest(
                 cursor_index=cursor_index, expected_output=expected_output
             ):
                 result = analyze_text("晩ご飯を食べましたか。")
-                if cursor_index > sum(len(key) for key in result):
-                    # 如果光标位置超出范围，检查是否抛出异常
+                total_length = sum(len(result[0]) for result in result)
+                if cursor_index > total_length:
+                    # 如果光标索引值超出范围，检查是否抛出异常
+                    with self.assertRaises(ValueError):
+                        get_cursor_result(result, cursor_index)
+                elif cursor_index < 0:
+                    # 如果光标索引值为负数，应该直接抛出异常
                     with self.assertRaises(ValueError):
                         get_cursor_result(result, cursor_index)
                 else:
