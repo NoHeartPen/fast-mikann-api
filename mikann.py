@@ -1,3 +1,5 @@
+from typing import List
+
 from sudachipy import Dictionary
 
 
@@ -22,10 +24,28 @@ def has_not_kana(input_text: str) -> bool:
     return True
 
 
-def analyze_text(text) -> list:
+def analyze_text(text: str) -> List[List[str]]:
+    """
+    使用 Sudachi 分析文本并返回表层形和基本形组成的列表。
+    Args:
+        text: 需要分析的文本
+
+    Returns:
+        包含 [surface, normalized_form] 的二维列表
+
+    Raises:
+        ValueError: 如果输入文本为空或 None
+
+    Examples:
+        >>> analyze_text("晩ご飯を食べましたか。")
+        [["晩ご飯", "晩御飯"], ["を", "を"], ["食べ", "食べる"],
+         ["まし", "ます"], ["た", "た"], ["か", "か"], ["。", "。"]]
+    """
+    if not text:
+        raise ValueError("Input text cannot be empty or None")
+
     tokenizer = Dictionary().create()
     result_list = []
-    # TODO: 移除常见的 markdown 语法和 ruby 标签
     for token in tokenizer.tokenize(text):
         # 辞書の見出しの漢字表記と Sudachi の正規化表記と違うところが多いので
         # 普段、読み方（reading_form）で検索するのをお勧めですが、
