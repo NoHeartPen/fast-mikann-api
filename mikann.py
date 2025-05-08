@@ -57,15 +57,24 @@ def analyze_text(text: str) -> List[List[str]]:
     return result_list
 
 
-def get_cursor_result(analysis_result: list[str], cursor_index: int) -> str | None:
+def get_cursor_result(
+    analysis_result: List[List[str]], cursor_index: int
+) -> str | None:
     """
     返回光标所在位置的单词的分析结果。
     Args:
         analysis_result: 光标所在上下文的所有分析结果
-        cursor_index: 光标所在的上下文的索引
+        cursor_index: 光标所在的上下文的索引值
 
     Returns:
         光标所在位置的单词的分析结果，如果光标位置不在上下文中，返回 None.
+
+    Raises:
+        ValueError: 如果光标索引小于 0 或大于所有分析结果的表层形的长度之和
+
+    Examples:
+        >>> result = [["晩ご飯", "晩御飯"], ["を", "を"], ["食べ", "食べる"], ["まし", "ます"], ["た", "た"], ["か", "か"], ["。", "。"]]
+        >>> get_cursor_result(result, 0)
     """
     if cursor_index < 0:
         raise ValueError(
