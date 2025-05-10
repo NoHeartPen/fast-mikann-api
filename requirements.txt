@@ -14,4 +14,3 @@ typing-inspection==0.4.0
 typing_extensions==4.13.1
 uvicorn==0.34.0
 SudachiDict-small==20250129
-SudachiDict-full==20250129
