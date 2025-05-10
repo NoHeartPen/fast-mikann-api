@@ -39,5 +39,5 @@ def post_analyze(request: AnalyzeRequest):
 
 @app.get("/")
 def index():
-    redict_url = "https://github.com/NonJishoKei"
+    redict_url = "https://github.com/NoHeartPen/fast-mikann-api"
     return RedirectResponse(url=redict_url)
