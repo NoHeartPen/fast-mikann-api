@@ -1,4 +1,4 @@
-# FastMiKannAPI
+# FastMikannAPI
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) ![Static Badge](https://img.shields.io/badge/docstring_style-google_notypes-000000)
 
