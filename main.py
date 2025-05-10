@@ -1,4 +1,5 @@
 import os
+from urllib.parse import unquote
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -70,8 +71,9 @@ def api_ruby(request: Request, sentence: str):
     Returns:
         以HTML格式返回已经标注读音的句子。
     """
-
-    added_ruby_text = add_furigana(sentence)
+    # 解码 URL 编码
+    decoded_sentence = unquote(sentence)
+    added_ruby_text = add_furigana(decoded_sentence)
     return templates.TemplateResponse(
         request,
         "ruby.html",
