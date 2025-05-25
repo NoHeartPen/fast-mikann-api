@@ -98,6 +98,21 @@ def example(request: Request):
 
 
 @app.get(
+    "/example/jishokei",
+    response_class=HTMLResponse,
+    tags=[
+        "Example",
+    ],
+    summary="Example for get cursor jishokei",
+)
+def example(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "jishokei.html",
+    )
+
+
+@app.get(
     "/",
     response_class=HTMLResponse,
 )

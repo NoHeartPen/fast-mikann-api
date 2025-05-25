@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Mikann Jishokei Example</title>
+    <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" rel="stylesheet">
+    <link crossorigin="anonymous" rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        #resultContainer {
+            margin-top: 20px;
+            min-height: 50px;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        #historyContainer {
+            margin-top: 20px;
+        }
+
+        .history-item {
+            cursor: pointer;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .history-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .history-date {
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+
+        .history-word {
+            color: #0d6efd;
+            margin-right: 30px;
+        }
+
+        .editable-content {
+            margin: 5px 0;
+        }
+
+        .delete-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #dc3545;
+            background: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .delete-btn:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h1 class="mb-4">辞書形</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-3">
+                <label for="inputText"
+                       class="form-label">入力しながら、「Optionキー」をダブルクリックし、辞書を調べましょう:</label>
+                <textarea class="form-control" id="inputText" rows="5"
+                          placeholder="ここにテキストを入力...">怒りも喜びも哀しさも全部ぶちこめ</textarea>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-secondary" id="cursorPosition">カーソル位置: 0</span>
+                    <input type="text" id="dictionaryUrl" class="form-control form-control-sm d-inline-block ms-2"
+                           style="width: 200px;"
+                           value="mkdictionaries:///?text=" placeholder="辞書URLフォーマット">
+                </div>
+                <button id="analyzeBtn" class="btn btn-primary">
+                    <span id="btnText">分析</span>
+                    <span id="loadingSpinner" class="loading spinner-border spinner-border-sm" role="status"
+                          aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultContainer" class="card">
+        <div class="card-body">
+            <h5 class="card-title">分析結果</h5>
+            <div id="resultContent">
+                <p class="text-muted">分析結果がここに表示されます。</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="historyContainer" class="card mt-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">メモ帳</h5>
+                <button id="clearAllBtn" class="btn btn-sm btn-outline-danger">すべて削除</button>
+            </div>
+            <div id="historyList">
+                <p class="text-muted">ここに検索履歴が表示されます。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+  $(document).ready(function() {
+
+    const $inputText = $('#inputText');
+    const $analyzeBtn = $('#analyzeBtn');
+    const $resultContent = $('#resultContent');
+    const $loadingSpinner = $('#loadingSpinner');
+    const $btnText = $('#btnText');
+    const $historyList = $('#historyList');
+    const $clearAllBtn = $('#clearAllBtn');
+
+    let lastKeyPressTime = 0;
+    let optionKeyPressCount = 0;
+    let historyData = [];
+
+    // 分开写更规范
+    $inputText.on('focus', function() {
+      const length = $(this).val().length;
+      this.setSelectionRange(length, length);
+    });
+    $inputText.trigger('focus');
+
+    // ローカルストレージから履歴を読み込む
+    function loadHistory() {
+      const savedHistory = localStorage.getItem('jishokeiHistory');
+      if (savedHistory) {
+        historyData = JSON.parse(savedHistory);
+        renderHistory();
+      }
+    }
+
+    // 履歴をローカルストレージに保存
+    function saveHistory() {
+      localStorage.setItem('jishokeiHistory', JSON.stringify(historyData));
+    }
+
+    // 履歴を表示
+    function renderHistory() {
+      if (historyData.length === 0) {
+        $historyList.html('<p class="text-muted">ここに検索履歴が表示されます。</p>');
+        return;
+      }
+
+      let html = '<ul class="list-unstyled">';
+      historyData.forEach((item, index) => {
+        html += `
+          <li class="history-item" data-index="${index}">
+            <div class="history-date">${item.date}</div>
+            <div class="editable-content" contenteditable="true">${item.content}</div>
+            <div class="history-word">
+              <a href="${item.link}" target="_blank">${item.word}</a>
+            </div>
+            <button class="delete-btn" title="削除">
+              <i class="bi bi-trash"></i>
+            </button>
+          </li>
+        `;
+      });
+      html += '</ul>';
+      $historyList.html(html);
+
+      // 編集可能なコンテンツにイベントリスナーを追加
+      $('.editable-content').on('blur', function() {
+        const index = $(this).closest('.history-item').data('index');
+        const newContent = $(this).text();
+        historyData[index].content = newContent;
+        saveHistory();
+      });
+
+      // 削除ボタンにイベントリスナーを追加
+      $('.delete-btn').on('click', function(e) {
+        e.stopPropagation();
+        const index = $(this).closest('.history-item').data('index');
+        historyData.splice(index, 1);
+        saveHistory();
+        renderHistory();
+      });
+    }
+
+    /**
+     * 获取并清理辞典 URL 中的占位符文本
+     * @return {string} 清理后的URL（不含占位符）
+     */
+    function getDictionaryUrl() {
+      const url = $('#dictionaryUrl').val();
+
+      // 检查无效输入（空值/非字符串）
+      if (!url || typeof url !== 'string') {
+        return '';
+      }
+
+      // 需要移除的常见占位符列表
+      const placeholders = [
+        '<text_to_search>',  // 英文占位符
+        '<文字列>',          // 日文占位符
+        '<text>',            // 简单文本占位符
+        '<search_term>',     // 搜索词占位符
+        '<query>',            // 查询占位符
+        '{w}', // 查询占位符
+      ];
+
+      let cleanedUrl = url;
+      // 遍历并替换所有占位符
+      placeholders.forEach(placeholder => {
+        cleanedUrl = cleanedUrl.replace(placeholder, '');
+      });
+
+      // 处理URL编码后的占位符
+      const encodedPlaceholders = [
+        '%3Ctext_to_search%3E',      // <text_to_search> 的URL编码
+        '%3C%E6%96%87%E5%AD%97%E5%88%97%3E',  // <文字列> 的URL编码
+        '%3Ctext%3E',                // <text> 的URL编码
+        '%3Csearch_term%3E',         // <search_term> 的URL编码
+        '%3Cquery%3E',                // <query> 的URL编码
+        '%7Bw%7D', //{w} 的 的URL编码
+      ];
+
+      // 遍历并替换所有编码后的占位符
+      encodedPlaceholders.forEach(placeholder => {
+        cleanedUrl = cleanedUrl.replace(placeholder, '');
+      });
+
+      // 移除替换后可能残留的末尾问号
+      cleanedUrl = cleanedUrl.replace(/\?$/, '');
+
+      return cleanedUrl;
+    }
+
+    // 履歴に追加
+    function addToHistory(content, word) {
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).
+          padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).
+          padStart(2, '0')}`;
+
+      historyData.unshift({
+        date: dateStr,
+        content: content,
+        word: word,
+        link: `${getDictionaryUrl()}${encodeURIComponent(word)}`,
+      });
+
+      // 履歴が多くなりすぎないように制限 (例: 最新50件)
+      if (historyData.length > 50) {
+        historyData = historyData.slice(0, 50);
+      }
+
+      saveHistory();
+      renderHistory();
+    }
+
+    // すべての履歴を削除
+    function clearAllHistory() {
+      if (confirm('本当にすべての履歴を削除しますか？この操作は元に戻せません。')) {
+        historyData = [];
+        saveHistory();
+        renderHistory();
+      }
+    }
+
+    // 初期化時に履歴を読み込む
+    loadHistory();
+
+    // すべて削除ボタンのイベントリスナー
+    $clearAllBtn.on('click', clearAllHistory);
+
+    // Optionキーのダブルクリック検出
+    $(document).on('keydown', function(e) {
+      if (e.key === 'Alt' || e.keyCode === 18) {  // Option/Altキー
+        const currentTime = new Date().getTime();
+        if (currentTime - lastKeyPressTime < 300) {  // 300ms以内の連打をダブルクリックとみなす
+          optionKeyPressCount++;
+          if (optionKeyPressCount >= 2) {
+            analyzeText();
+            optionKeyPressCount = 0;
+          }
+        } else {
+          optionKeyPressCount = 1;
+        }
+        lastKeyPressTime = currentTime;
+      }
+    });
+
+    // 分析ボタンクリックイベント
+    $analyzeBtn.on('click', analyzeText);
+
+    // 分析関数
+    function analyzeText() {
+      const text = $inputText.val();
+      const cursorPos = $inputText[0].selectionStart;
+
+      if (!text.trim()) {
+        alert('テキストを入力してください');
+        return;
+      }
+
+      // ローディング表示
+      $loadingSpinner.show();
+      $btnText.hide();
+      $analyzeBtn.prop('disabled', true);
+
+      // API呼び出し
+      $.ajax({
+        url: '/',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          sentence: text,
+          cursor_index: cursorPos,
+        }),
+        success: function(response) {
+          $resultContent.html(`
+            <p>カーソル位置付近の辞書形: <strong>${response.jishokei}</strong></p>
+          `);
+
+          // 履歴に追加
+          addToHistory(text, response.jishokei);
+          // カスタムURLを使用
+          const urlFormat = getDictionaryUrl() || 'mkdictionaries:///?text=';
+          window.location.href = `${urlFormat}${response.jishokei}`;
+        },
+        error: function(xhr) {
+          $resultContent.html(`
+            <div class="alert alert-danger">
+              エラーが発生しました: ${xhr.responseJSON?.detail || '不明なエラー'}
+            </div>
+          `);
+        },
+        complete: function() {
+          $loadingSpinner.hide();
+          $btnText.show();
+          $analyzeBtn.prop('disabled', false);
+        },
+      });
+    }
+  });
+</script>
+</body>
+</html>
