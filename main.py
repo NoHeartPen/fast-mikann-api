@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from starlette.responses import RedirectResponse
 
 from mikann import analyze_text, get_cursor_result
 from utils.make_ruby import add_furigana
@@ -98,7 +97,12 @@ def example(request: Request):
     )
 
 
-@app.get("/")
-def index():
-    redict_url = "https://github.com/NoHeartPen/fast-mikann-api"
-    return RedirectResponse(url=redict_url)
+@app.get(
+    "/",
+    response_class=HTMLResponse,
+)
+def index(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+    )
