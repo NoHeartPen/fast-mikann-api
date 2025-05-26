@@ -132,7 +132,7 @@
     let optionKeyPressCount = 0;
     let historyData = [];
 
-    // 分开写更规范
+    // 画面が初期化されたとき、クーサーとフォックスを制御する
     $inputText.on('focus', function() {
       const length = $(this).val().length;
       this.setSelectionRange(length, length);
@@ -318,9 +318,10 @@
       $btnText.hide();
       $analyzeBtn.prop('disabled', true);
 
+      const ANALYZE_API = '/'
       // API呼び出し
       $.ajax({
-        url: '/',
+        url: ANALYZE_API,
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
