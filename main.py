@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
+from api.examle import router_example
 from mikann import analyze_text, get_cursor_result
 from utils.make_ruby import add_furigana
 
@@ -27,6 +28,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(router_example)
 
 
 class SentenceRequest(BaseModel):
@@ -79,21 +82,6 @@ def api_ruby(request: Request, sentence: str):
         {
             "added_ruby_text": added_ruby_text,
         },
-    )
-
-
-@app.get(
-    "/example",
-    response_class=HTMLResponse,
-    tags=[
-        "Example",
-    ],
-    summary="测试页面",
-)
-def example(request: Request):
-    return templates.TemplateResponse(
-        request,
-        "example.html",
     )
 
 
