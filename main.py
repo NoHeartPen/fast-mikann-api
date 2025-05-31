@@ -105,10 +105,10 @@ def example(request: Request):
     ],
     summary="Example for get cursor jishokei",
 )
-def example(request: Request):
+def jishokei_example(request: Request):
     return templates.TemplateResponse(
-        request,
-        "jishokei.html",
+        "example/jishokei.html",
+        {"request": request},
     )
 
 
