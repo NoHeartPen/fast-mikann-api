@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
+from api.examle import router_example
 from mikann import analyze_text, get_cursor_result
 from utils.make_ruby import add_furigana
 
@@ -27,6 +28,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(router_example)
 
 
 class SentenceRequest(BaseModel):
@@ -79,60 +82,6 @@ def api_ruby(request: Request, sentence: str):
         {
             "added_ruby_text": added_ruby_text,
         },
-    )
-
-
-@app.get(
-    "/example",
-    response_class=HTMLResponse,
-    tags=[
-        "Example",
-    ],
-    summary="Example routes",
-)
-def example(request: Request):
-    return templates.TemplateResponse(
-        "example.html",
-        {
-            "request": request,
-            "example_routes": [
-                {"path": "/example/ruby", "description": "Example for making ruby"},
-                {
-                    "path": "/example/jishokei",
-                    "description": "Example for getting cursor jishokei",
-                },
-            ],
-        },
-    )
-
-
-@app.get(
-    "/example/ruby",
-    response_class=HTMLResponse,
-    tags=[
-        "Example",
-    ],
-    summary="Example for make ruby",
-)
-def example(request: Request):
-    return templates.TemplateResponse(
-        "example/ruby.html",
-        {"request": request},
-    )
-
-
-@app.get(
-    "/example/jishokei",
-    response_class=HTMLResponse,
-    tags=[
-        "Example",
-    ],
-    summary="Example for get cursor jishokei",
-)
-def jishokei_example(request: Request):
-    return templates.TemplateResponse(
-        "example/jishokei.html",
-        {"request": request},
     )
 
 
