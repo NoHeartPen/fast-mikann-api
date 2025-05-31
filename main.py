@@ -98,6 +98,21 @@ def example(request: Request):
 
 
 @app.get(
+    "/example/ruby",
+    response_class=HTMLResponse,
+    tags=[
+        "Example",
+    ],
+    summary="Example for make ruby",
+)
+def example(request: Request):
+    return templates.TemplateResponse(
+        "example/ruby.html",
+        {"request": request},
+    )
+
+
+@app.get(
     "/example/jishokei",
     response_class=HTMLResponse,
     tags=[
