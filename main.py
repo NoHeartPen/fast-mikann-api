@@ -88,12 +88,21 @@ def api_ruby(request: Request, sentence: str):
     tags=[
         "Example",
     ],
-    summary="测试页面",
+    summary="Example routes",
 )
 def example(request: Request):
     return templates.TemplateResponse(
-        request,
         "example.html",
+        {
+            "request": request,
+            "example_routes": [
+                {"path": "/example/ruby", "description": "Example for making ruby"},
+                {
+                    "path": "/example/jishokei",
+                    "description": "Example for getting cursor jishokei",
+                },
+            ],
+        },
     )
 
 
