@@ -1,15 +1,14 @@
 import os
-from urllib.parse import unquote
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
 
 from api.examle import router_example
+from api.ruby import router_ruby
 from mikann import analyze_text, get_cursor_result
-from utils.make_ruby import add_furigana
+from models.model import AnalyzeRequest
 
 app = FastAPI(
     title="Mikann API",
@@ -30,16 +29,7 @@ app.add_middleware(
 )
 
 app.include_router(router_example)
-
-
-class SentenceRequest(BaseModel):
-    sentence: str
-    cursor_index: str
-
-
-class AnalyzeRequest(BaseModel):
-    sentence: str
-    cursor_index: int
+app.include_router(router_ruby)
 
 
 @app.post("/")
@@ -52,37 +42,6 @@ def post_analyze(request: AnalyzeRequest):
         return {"jishokei": f"{cursor_jishokei}"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.get(
-    "/ruby/{sentence}",
-    response_class=HTMLResponse,
-    tags=[
-        "API",
-    ],
-    summary="处理注音请求",
-)
-def api_ruby(request: Request, sentence: str):
-    """
-    处理注音请求
-
-    Args:
-        request: 请求对象
-        sentence: 需要标注读音的句子
-
-    Returns:
-        以HTML格式返回已经标注读音的句子。
-    """
-    # 解码 URL 编码
-    decoded_sentence = unquote(sentence)
-    added_ruby_text = add_furigana(decoded_sentence)
-    return templates.TemplateResponse(
-        request,
-        "ruby.html",
-        {
-            "added_ruby_text": added_ruby_text,
-        },
-    )
 
 
 @app.get(
