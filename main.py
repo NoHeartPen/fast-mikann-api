@@ -4,11 +4,11 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
 
 from api.examle import router_example
 from api.ruby import router_ruby
 from mikann import analyze_text, get_cursor_result
+from models.model import AnalyzeRequest
 
 app = FastAPI(
     title="Mikann API",
@@ -30,16 +30,6 @@ app.add_middleware(
 
 app.include_router(router_example)
 app.include_router(router_ruby)
-
-
-class SentenceRequest(BaseModel):
-    sentence: str
-    cursor_index: str
-
-
-class AnalyzeRequest(BaseModel):
-    sentence: str
-    cursor_index: int
 
 
 @app.post("/")
