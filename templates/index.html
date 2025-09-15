@@ -1,51 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastMikannAPI</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+{% extends "example/base.html" %}
 
-        h1 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
+{% block title %}
+FastMikannAPI
+{% endblock %}
 
-        h2 {
-            color: #2980b9;
-        }
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
 
-        a {
-            color: #3498db;
-            text-decoration: none;
-        }
+            <h1 class="mb-4">FastMikannAPI</h1>
+            <p>
+                This project provides a fully free API for furigana generation and Japanese search assistance, tailored
+                for Japanese language learners.
+            </p>
 
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-<h1>FastMikannAPI</h1>
-<p>This project provides a fully free API for furigana generation and Japanese search assistance, tailored for Japanese
-    language learners.</p>
+            <h2>Example</h2>
+            <p><a href="./example" class="btn btn-primary">View examples</a></p>
 
-<h2>Example</h2>
-<p><a href="./example">View examples</a></p>
+            <h2>API Documentation</h2>
+            <p><a href="./docs" class="btn btn-info">Read the API docs</a></p>
 
-<h2>API Documentation</h2>
-<p><a href="./docs">Read the docs</a></p>
-
-<h2>GitHub Repository</h2>
-<p><a href="https://github.com/NoHeartPen/fast-mikann-api"
-      target="_blank">https://github.com/NoHeartPen/fast-mikann-api</a></p>
-</body>
-</html>
+            <h2>GitHub Repository</h2>
+            <p>
+                <a href="https://github.com/NoHeartPen/fast-mikann-api" target="_blank" class="btn btn-dark">
+                    <i class="bi bi-github"></i> GitHub Repository
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

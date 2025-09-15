@@ -1,11 +1,23 @@
 {% extends "base.html" %}
-{% block title %}Mikann Jishokei Example{% endblock %}
-{% block content %}
-<h1 class="mb-4">Mikann Example</h1>
 
-<ul>
-    {% for route in example_routes %}
-    <li><a href="{{ route.path }}">{{ route.description }}</a></li>
-    {% endfor %}
-</ul>
+{% block title %}
+Mikann Jishokei Example
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <h1 class="mb-4">Mikann Example</h1>
+
+            <ul class="list-group">
+                {% for route in example_routes %}
+                <li class="list-group-item">
+                    <a href="{{ route.path }}" class="text-decoration-none">{{ route.description }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
 {% endblock %}
