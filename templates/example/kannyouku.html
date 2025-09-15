@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}慣用句の例{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <h1 class="mb-3">慣用句サンプル集</h1>
+            <p class="text-muted mb-4">
+                任意の例文をクリックすると、システムが自動的にその中の慣用句を識別し、辞典検索リンクを提供します。</p>
+
+            <!-- 新增的输入区域 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">カスタムテキスト分析</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <textarea
+                                class="form-control"
+                                id="customText"
+                                rows="3"
+                                placeholder="分析したい日本語テキストを入力してください..."
+                        ></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="analyzeBtn">
+                        <i class="bi bi-search"></i> 慣用句を分析
+                    </button>
+                </div>
+            </div>
+
+            <h5 class="mb-3">サンプルテキスト</h5>
+            <div class="list-group" id="examples">
+                <!-- 示例项保持不变 -->
+                <div class="example-item" data-text="ウソはつかない">
+                    ウソはつかない
+                </div>
+                <div class="example-item" data-text="カマをかけてみるか">
+                    カマをかけてみるか
+                </div>
+                <div class="example-item" data-text="つじつまが合わなくて">
+                    つじつまが合わなくて
+                </div>
+                <div class="example-item" data-text="一矢報いたぞ">
+                    一矢報いたぞ
+                </div>
+                <div class="example-item" data-text="はめ外しすぎです">
+                    はめ外しすぎです
+                </div>
+                <div class="example-item" data-text="喧嘩売ってんのか">
+                    喧嘩売ってんのか
+                </div>
+                <div class="example-item" data-text="足早えんだな">
+                    足早えんだな
+                </div>
+                <div class="example-item"
+                     data-text="気遣ってまーすみたいな感じ出しまくりじゃないですか">
+                    気遣ってまーすみたいな感じ出しまくりじゃないですか
+                </div>
+                <div class="example-item" data-text="声はかけていただいたんです">
+                    声はかけていただいたんです
+                </div>
+                <div class="example-item"
+                     data-text="気が進まないんだったら　無理しなくていいよ">
+                    気が進まないんだったら　無理しなくていいよ
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title">慣用句認識結果</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>例文：</strong>
+                    <div class="border rounded p-2 bg-light" id="originalText">-</div>
+                </div>
+
+                <div id="resultContent">
+                    <!-- 结果内容将在这里动态显示 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  $(document).ready(function() {
+    // 自动为所有example-item添加Bootstrap类
+    $('.example-item').addClass('list-group-item list-group-item-action');
+
+    // 获取模态框实例
+    const resultModalElement = document.getElementById('resultModal');
+    const resultModal = new bootstrap.Modal(resultModalElement);
+
+    const $originalText = $('#originalText');
+    const $resultContent = $('#resultContent');
+    const $customText = $('#customText');
+    const $analyzeBtn = $('#analyzeBtn');
+
+    function buildUrls(word) {
+      const w = encodeURIComponent(word);
+      return {
+        mkd: `mkdictionaries:///?text=${w}&t=ja`,
+        kotobank: `https://kotobank.jp/search?q=${w}&t=ja`,
+        weblio: `https://www.weblio.jp/content/${w}`,
+      };
+    }
+
+    function createDictLinks(word) {
+      const {mkd, kotobank, weblio} = buildUrls(word);
+      return `
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                <button type="button" class="btn btn-primary btn-sm dict-btn" data-url="${mkd}">
+                    <i class="bi bi-book"></i>物書堂
+                </button>
+                <a href="${kotobank}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-globe"></i> Kotobank
+                </a>
+                <a href="${weblio}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-journal-text"></i> Weblio
+                </a>
+            </div>
+        `;
+    }
+
+    function showResults(text, phrases) {
+      $originalText.text(text);
+
+      if (phrases.length === 0) {
+        $resultContent.html(`
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    慣用句は検出されませんでした
+                </div>
+            `);
+      } else {
+        let html = `
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i>
+                    ${phrases.length}個の慣用句を検出しました：
+                        ${phrases.map(phrase => `<span>${phrase}</span>`).join('、')}
+                </div>
+            `;
+
+        phrases.forEach((phrase, index) => {
+          html += `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">${phrase}</h6>
+                            ${createDictLinks(phrase)}
+                        </div>
+                    </div>
+                `;
+        });
+
+        $resultContent.html(html);
+      }
+
+      // 显示结果弹窗
+      resultModal.show();
+    }
+
+    // 通用的分析函数
+    async function analyzeText(text) {
+      if (!text.trim()) {
+        alert('分析するテキストを入力してください！');
+        return;
+      }
+
+      // 禁用按钮，显示加载状态
+      $analyzeBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> 分析中...');
+
+      try {
+        const response = await $.ajax({
+          url: '/example/api/scan-kannyoku',
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({text: text}),
+        });
+
+        const phrases = Array.isArray(response?.phrases) ? response.phrases : [];
+        showResults(text, phrases);
+
+      } catch (error) {
+        const message = error.responseJSON?.detail || error.statusText || error.message || '不明なエラー';
+        alert('分析失敗：' + message);
+      } finally {
+        // 恢复按钮状态
+        $analyzeBtn.prop('disabled', false).html('<i class="bi bi-search"></i> 慣用句を分析');
+      }
+    }
+
+    // 点击分析按钮
+    $analyzeBtn.on('click', function() {
+      const text = $customText.val();
+      analyzeText(text);
+    });
+
+    // 支持回车键分析
+    $customText.on('keydown', function(e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        const text = $(this).val();
+        analyzeText(text);
+      }
+    });
+
+    // 点击例句行
+    $('.example-item').on('click', async function() {
+      const text = $(this).data('text');
+      analyzeText(text);
+    });
+
+    // 处理物書堂 链接点击
+    $(document).on('click', '.dict-btn', function() {
+      const url = $(this).data('url');
+      try {
+        window.location.href = url;
+      } catch (_) {
+        alert(
+            '物書堂のプロトコルリンクを開けませんでした。インストールされているか、カスタムURL Schemeが許可されているかご確認ください。');
+      }
+    });
+
+    // 添加提示信息
+    $customText.attr('title', 'ヒント：Ctrl+EnterまたはCmd+Enterで素早く分析');
+  });
+</script>
+{% endblock %}
