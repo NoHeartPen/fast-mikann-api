@@ -1,6 +1,31 @@
 import unittest
 
-from mikann import analyze_text, get_cursor_result
+from mikann import (
+    analyze_text,
+    get_cursor_result,
+    analyze_for_kannyouku,
+    scan_kannyouku,
+)
+
+
+def get_nested_list_set_items(input_list: list[set[str]]) -> set[str]:
+    """将集合组成的嵌套列表里的元素添加到一个新集合中
+    由于 unitest 提供的判断方法无法准确判断这样的
+    列表，故将测试结果处理后再进行断言
+
+    Args:
+        input_list: 由集合组成的嵌套列表，例：[("嘘を付く",)]
+
+    Returns:
+        由原列表中的元素去重后组成的集合，例：("嘘を付く")
+    """
+    output_set = set()
+    if not input_list:
+        return output_set
+    for sublist in input_list:
+        for element in sublist:
+            output_set.add(element)
+    return output_set
 
 
 class TestCursorWord(unittest.TestCase):
@@ -268,6 +293,129 @@ class TestCursorWord(unittest.TestCase):
                     self.assertEqual(
                         get_cursor_result(result, cursor_index), expected_output
                     )
+
+    def test_analyze_kannyouku(self):
+        test_cases = [
+            ("うそつけ！", [["うそ"], ["つける"], ["!"]]),
+            (
+                "ここはカマをかけてみるか",
+                [
+                    ["此処"],
+                    ["は"],
+                    ["かま"],
+                    ["を"],
+                    ["かける"],
+                    ["て"],
+                    ["見る"],
+                    ["か"],
+                ],
+            ),
+        ]
+
+        for test_text, expected_output in test_cases:
+            with self.subTest(cursor_index=test_text, expected_output=expected_output):
+                self.assertEqual(analyze_for_kannyouku(test_text), expected_output)
+
+    def test_scan_kannyouku(self):
+        phrase_result = [("嘘を吐く",)]
+        test_cases = [
+            ("うそをつく", phrase_result),
+            # FROM https://www.amazon.co.jp/%E3%81%BC%E3%81%A3%E3%81%A1%E3%83%BB%E3%81%96%E3%83%BB%E3%82%8D%E3%81%A3%E3%81%8F%EF%BC%81/dp/B0B6Q93B2C
+            # 「（虹夏）そこ ウソつかない」『ぼっち・ざ・ろっく』02 また明日
+            ("ウソつかない", phrase_result),
+            # FROM: https://www.immersionkit.com/
+            # 「うそつけ」 『Fullmetal Alchemist Brotherhood』
+            # FIXME [['うそ'], ['つける']]("うそつけ", phrase_result),
+            # 「オレはうそをつかねぇのを信条にしている」 『Fullmetal Alchemist Brotherhood』
+            ("うそをつかねぇ", phrase_result),
+            # 「ウソまでつくし」『Toradora!』
+            # FIXME [['うそ'], ['まで'], ['尽くす']] ("ウソまでつくし", phrase_result),
+            # 「遠坂にもウソはつかない」『Fate Stay Night Unlimited Blade Works』
+            ("ウソはつかない", phrase_result),
+            # 「ウソがつけなくなる結界を 張ればいいんだわ」『Wandering Witch The Journey of Elaina』
+            # FIXME [['うそ'], ['が'], ['つける'], ['ない'], ['成る'], ['結界'], ['を']]
+            # ("ウソがつけなくなる結界を", phrase_result),
+            # 「俺をかばってみんなの前で ウソつかせたこと」『Weakest Beast』
+            ("ウソつかせたこと", phrase_result),
+            # FROM: https://www.immersionkit.com/
+            # 「かっ　嘘つけぇーっ！　てめぇにはわかるハズだぁぁっ！」
+            # FIXME [['嘘'], ['つける'], ['ぇ'], ['ー'], ['っ'], ['!']]
+            # ("嘘つけぇーっ！", phrase_result),
+            # 「上手に嘘(うそ)をつくのよ」『Million Yen Woman』
+            ("嘘(うそ)をつくのよ", phrase_result),
+            # 「福ちゃんを庇って嘘ついたんだと思う」『氷菓』
+            ("嘘ついたんだと思う", phrase_result),
+            # 「里志が嘘を付いているわけではなさそうだ」『氷菓』
+            ("嘘を付いているわけではなさそうだ", phrase_result),
+            # 不含任何词组
+            ("", None),
+            # ここはカマをかけてみるか
+            ("カマをかけてみるか", [("鎌を掛ける",)]),
+            # どう考えても　つじつまが合わなくて
+            ("つじつまが合わなくて", [("辻褄が合う",)]),
+            # だが“もう１人のあなたに一矢報いたぞ”なんて言えば
+            # テレビアニメ「ロード・エルメロイⅡ世の事件簿」第12話
+            ("一矢報いたぞ", [("一矢を報いる",)]),
+            # さすがに はめ外しすぎです
+            # テレビアニメ「ぼっち・ざ・ろっく」
+            ("はめ外しすぎです", [("羽目を外す",)]),
+            # 喧嘩売ってんのか
+            # テレビアニメ「ガールズバンドクライ」第1話
+            (
+                "喧嘩売ってんのか",
+                [("喧嘩を売る",)],
+            ),
+            # 足早えんだな
+            # テレビアニメ「ガールズバンドクライ」第1話
+            ("足早えんだな", [("足が早い",)]),
+            # 私気遣ってまーすみたいな感じ出しまくりじゃないですか
+            # テレビアニメ「ガールズバンドクライ」第2話
+            # FIXME 気を遣う　と　気を使う　二つの表記見出しがあるので、
+            ("気遣ってまーすみたいな感じ出しまくりじゃないですか", [("気を使う",)]),
+            # それでも　事務所からいくつか声はかけていただいたんです
+            # テレビアニメ「ガールズバンドクライ」第6話
+            ("声はかけていただいたんです", [("声を掛ける",)]),
+            # 人見知りだから　気ぃ遣われるじゃないですか
+            # テレビアニメ「ガールズバンドクライ」第2話
+            ("気ぃ遣われるじゃないですか", [("気を使う",)]),
+            # 気が進まないんだったら　無理しなくていいよ
+            (
+                "気が進まないんだったら　無理しなくていいよ",
+                [("気が進まない",), ("気が進む",)],
+            ),
+            # 第1集
+            ("それもその歌に背中を押されたからで", [("背中を押す",)]),
+            ("喧嘩売ってんのか", [("喧嘩を売る",)]),
+            # 第3集
+            ("私　鳥肌が立っちゃいました", [("鳥肌が立つ",)]),
+            ("すっごい鳥肌立ってる", [("鳥肌が立つ",)]),
+            # 第4集
+            # FIXME ("ここへ来ると なんとなく腰が引けてしまって", [("腰が引ける",)]),
+            ("昨日急にこっちに来たから 顔出すって言って", [("顔を出す",)]),
+            # 第5集
+            ("爪痕残されたんです", [("爪痕を残す",)]),
+            ("灰になった後で ようやく気づいて", [("灰になる",)]),
+            # 第6集
+            ("そりゃハードル高いわ", [("ハードルが高い",)]),
+            ("欲出てきちゃった", [("欲が出る",)]),
+            # 第7集
+            ("あなたの肩持つわけにはいかないよ", [("肩を持つ",)]),
+            # 第9集
+            ("少し　涼を取らせていただけると　ありがたいのですが", [("涼を取る",)]),
+            # 第11集
+            ("正論ばかりで融通が利かないし", [("融通が利く",)]),
+            # 第13集
+            ("それはダイダスにも頭を下げるってことですか", [("頭を下げる",)]),
+            ("意地張るって知ってるからだよ", [("意地を張る",)]),
+        ]
+
+        for test_text, expected_result in test_cases:
+            with self.subTest(test_text=test_text, expected_result=expected_result):
+                result = scan_kannyouku(test_text)
+                self.assertCountEqual(
+                    get_nested_list_set_items(result),
+                    get_nested_list_set_items(expected_result),
+                )
 
 
 if __name__ == "__main__":

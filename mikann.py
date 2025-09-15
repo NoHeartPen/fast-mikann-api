@@ -2,6 +2,8 @@ from typing import List
 
 from sudachipy import Dictionary
 
+from utils.kannyouku import get_kannyouku_all_words, query_kannyouku
+
 
 def has_not_kana(input_text: str) -> bool:
     """Check if the input text does not have kana.
@@ -99,3 +101,76 @@ def get_cursor_result(
             # 可以考虑基于难度和词频猜测哪个更有可能是用户想查的单词，
             # 或者允许按照个人习惯，设置这种情况是返回前还是后
             return jishokei
+
+
+def analyze_for_kannyouku(text: str) -> List[List[str]]:
+    """
+    使用 Sudachi 分析文本并返回基本形组成的列表，用于进一步分析是否存在惯用句。
+    Args:
+        text: 需要分析的文本
+
+    Returns:
+        包含 [surface, normalized_form] 的二维列表
+
+    Raises:
+        ValueError: 如果输入文本为空或 None
+
+    Examples:
+        >>> analyze_for_kannyouku("うそつけ！")
+        [["うそ"], ["つける"]])
+    """
+    if not text:
+        raise ValueError("Input text cannot be empty or None")
+
+    tokenizer = Dictionary().create()
+    result_list = []
+    for token in tokenizer.tokenize(text):
+        # token.reading_form() は辞書の見出しのかな表記ではなく、
+        # TODO result = [token.surface(), jishokei]
+        result = [token.normalized_form()]
+        result_list.append(result)
+    return result_list
+
+
+# FIXME
+kannyouku_words_set = get_kannyouku_all_words()
+
+
+def scan_kannyouku(text: str) -> List[set[str]] | None:
+    """
+    分析文本中的可能存在的惯用句。
+    Args:
+        text: 待分析的文本
+
+    Returns:
+        可能的汉语词汇列表
+
+    Examples:
+        >>> scan_kannyouku("ウソまでつく")
+        ["うそをつく"， "嘘を吐く"]
+    """
+    if not text:
+        return None
+    analysis_results = analyze_for_kannyouku(text)
+    print(f"「{text}」は {analysis_results}　に解析された")
+
+    kannyouku_words_analysis_results = []
+    for result in analysis_results:
+        # 排除不可能组成惯用句的单词，主要是格助词
+        for word in result:
+            if word in kannyouku_words_set:
+                print(f"「{result}」は惯用句の単語の候補です")
+                kannyouku_words_analysis_results.append(result)
+            else:
+                print(f"「{word}」は惯用句の単語の候補ではない")
+
+    print(f"{kannyouku_words_analysis_results}は可能な惯用句の単語候補です")
+    kannyouku_list = []
+    if len(kannyouku_words_analysis_results) > 1:
+        kannyouku_list = query_kannyouku(kannyouku_words_analysis_results)
+        print(
+            f"「{text}」には 「{kannyouku_list}」などの慣用句が含まれている可能性があります"
+        )
+    else:
+        print(f"「{text}」に慣用句が含まれているない")
+    return kannyouku_list
