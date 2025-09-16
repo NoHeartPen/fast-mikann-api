@@ -1,9 +1,13 @@
 import os
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi import status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from api.examle import router_example
 from api.ruby import router_ruby
@@ -20,6 +24,64 @@ app = FastAPI(
 templates = Jinja2Templates(
     directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
 )
+
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")),
+    name="static",
+)
+
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """自定义 HTTP 异常 (如 404、403 等)"""
+    return templates.TemplateResponse(
+        "error.html",
+        {
+            "request": request,
+            "status_code": exc.status_code,
+            "status_message": exc.detail if exc.detail else "Error",
+            "error_message": "Oops! Something went wrong.",
+        },
+        status_code=exc.status_code,
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """自定义验证失败异常 (如请求参数错误)"""
+    return templates.TemplateResponse(
+        "error.html",
+        {
+            "request": request,
+            "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "status_message": "Validation Error",
+            "error_message": str(exc),
+        },
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    """处理所有未捕获的异常"""
+    return templates.TemplateResponse(
+        "error.html",
+        {
+            "request": request,
+            "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "status_message": "Internal Server Error",
+            "error_message": "An unexpected error occurred. Please try again later.",
+        },
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
+
+
+@app.get("/cause_error")
+async def cause_error():
+    """手动触发一个示例异常以测试自定义错误页面"""
+    raise HTTPException(status_code=404, detail="This is a custom 404 error.")
+
 
 app.add_middleware(
     CORSMiddleware,
