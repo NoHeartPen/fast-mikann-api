@@ -46,7 +46,7 @@ def analyze_text(text: str) -> List[List[str]]:
     if not text:
         raise ValueError("Input text cannot be empty or None")
 
-    tokenizer = Dictionary().create()
+    tokenizer = Dictionary(config='{"userDict": ["mikann.dic"]}').create()
     result_list = []
     for token in tokenizer.tokenize(text):
         # 辞書の見出しの漢字表記と Sudachi の正規化表記と違うところが多いので
