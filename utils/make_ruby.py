@@ -66,7 +66,7 @@ def add_furigana(input_text: str) -> str:
     Returns:
         标注了读音的文本
     """
-    tokenizer = Dictionary().create()
+    tokenizer = Dictionary(config='{"userDict": ["mikann.dic"]}').create()
     annotated_text = ""
     for token in tokenizer.tokenize(input_text):
         surface = token.surface()
