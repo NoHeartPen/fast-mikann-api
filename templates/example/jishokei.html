@@ -71,7 +71,7 @@
                 <div>
                     <input type="text" id="dictionaryUrl" class="form-control form-control-sm d-inline-block ms-2"
                            style="width: 200px;"
-                           value="mkdictionaries:///?text=" placeholder="辞書URLフォーマット">
+                           value="https://www.weblio.jp/content/" placeholder="辞書URLフォーマット">
                 </div>
                 <button id="analyzeBtn" class="btn btn-primary">
                     <span id="btnText">分析</span>
@@ -324,8 +324,9 @@
           // 履歴に追加
           addToHistory(text, response.jishokei);
           // カスタムURLを使用
-          const urlFormat = getDictionaryUrl() || 'mkdictionaries:///?text=';
-          window.location.href = `${urlFormat}${response.jishokei}`;
+          const urlFormat = getDictionaryUrl() || 'https://www.weblio.jp/content/';
+          window.open(`${urlFormat}${response.jishokei}`, '_blank')
+          ;
         },
         error: function(xhr) {
           $resultContent.html(`
