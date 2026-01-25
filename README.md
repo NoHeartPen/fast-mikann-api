@@ -2,11 +2,16 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) ![Static Badge](https://img.shields.io/badge/docstring_style-google_notypes-000000)
 
-This project provides a fully free API for furigana generation and Japanese search assistance, tailored for Japanese
-language learners.
+> [!CAUTION]
+> This project is currently in an alpha state. While breaking changes is becoming less common, nevertheless, anything
+> and everything could change.
 
-Under the hood, it employs Mikann as the morphological analyzer, which is based on Sudachi's architecture optimized for
-Japanese dictionary retrieval.
+This project provides a fully free API for furigana generation and intelligent search capabilities, tailored
+for Japanese language learners.
+
+Under the hood, it uses Mikann, a morphological analyzer powered by Sudachi with extended dictionaries and
+search-optimized processing of Japanese idioms and sentence pattern, designed for information retrieval tasks of
+Japanese dictionary applications.
 
 ## Free Deployment with Vercel
 
@@ -31,4 +36,3 @@ JetBrains, for offering the [PyCharm Community Edition](https://www.jetbrains.co
 ## LICENSE
 
 [MIT](LICENSE)
-
